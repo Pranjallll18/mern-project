@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail</title>
+    <style>
+        .product { margin: 20px; }
+        .product-images img { width: 200px; height: 200px; margin-right: 10px; }
+        .review-form, .reviews { margin: 20px; }
+    </style>
+</head>
+<body>
+    <div class="product">
+        <!-- Product Images -->
+        <div class="product-images" id="product-images">
+            <!-- Images will be loaded here dynamically -->
+        </div>
+        
+        <h2 id="product-name">Loading product...</h2>
+        <p id="product-price"></p>
+        <p id="product-availability"></p>
+        <p>Variations:
+            <select id="variation"></select>
+        </p>
+        <button id="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="review-form">
+        <h3>Leave a Review</h3>
+        <select id="rating">
+            <option value="1">1 Star</option>
+            <option value="2">2 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="5">5 Stars</option>
+        </select>
+        <textarea id="comment" placeholder="Write a comment"></textarea>
+        <button id="submit-review">Submit Review</button>
+    </div>
+
+    <div class="reviews">
+        <h3>Customer Reviews</h3>
+        <div id="review-list">Loading reviews...</div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const productId = "YOUR_PRODUCT_ID"; // Replace with your product ID
+
+        // Load product details
+        $.get(`/product/${productId}`, function(product) {
+            $('#product-name').text(product.name);
+            $('#product-price').text(`Price: $${product.price}`);
+            $('#product-availability').text(`Availability: ${product.availability}`);
+            
+            // Load product images
+            product.images.forEach(image => {
+                $('#product-images').append(`<img src="${image}" alt="${product.name}" />`);
+            });
+
+            // Load product variations
+            product.variations.forEach(variation => {
+                $('#variation').append(`<option>${variation}</option>`);
+            });
+        });
+
+        // Load reviews
+        $.get(`/product/${productId}/reviews`, function(reviews) {
+            $('#review-list').html('');
+            reviews.forEach(review => {
+                $('#review-list').append(`<p>Rating: ${review.rating}/5 - ${review.comment}</p>`);
+            });
+        });
+
+        // Submit review
+        $('#submit-review').on('click', function() {
+            const rating = $('#rating').val();
+            const comment = $('#comment').val();
+            $.post(`/product/${productId}/review`, { rating, comment }, function(response) {
+                if (response.success) {
+                    alert('Review submitted!');
+                    location.reload(); // Reload page to show the new review
+                }
+            });
+        });
+    </script>
+</body>
+</html>
